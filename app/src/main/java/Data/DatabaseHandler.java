@@ -56,12 +56,17 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         Util.KEY_PRICE}, Util.KEY_ID + "=?", new String[] {String.valueOf(id)},
                 null, null,
                 null, null);
+        Car car = new Car();
         if (cursor != null) {
-            cursor.moveToFirst();
-        }
+            try {
+                cursor.moveToFirst();
+                car = new Car(Integer.parseInt(cursor.getString(0)),
+                        cursor.getString(1), cursor.getString(2));
+            } finally {
+                cursor.close();
+            }
 
-        Car car = new Car(Integer.parseInt(cursor.getString(0)),
-                cursor.getString(1), cursor.getString(2));
+        }
 
         return car;
     }
@@ -74,14 +79,19 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         String selectAllCars = "SELECT * FROM " + Util.TABLE_NAME;
         Cursor cursor = db.rawQuery(selectAllCars, null);
         if (cursor.moveToFirst()) {
-            do {
-                Car car = new Car();
-                car.setId(Integer.parseInt(cursor.getString(0)));
-                car.setName(cursor.getString(1));
-                car.setPrice(cursor.getString(2));
+            try {
+                do {
+                    Car car = new Car();
+                    car.setId(Integer.parseInt(cursor.getString(0)));
+                    car.setName(cursor.getString(1));
+                    car.setPrice(cursor.getString(2));
 
-                carsList.add(car);
-            } while (cursor.moveToNext());
+                    carsList.add(car);
+                } while (cursor.moveToNext());
+            } finally {
+                cursor.close();
+            }
+
         }
 
         return carsList;
@@ -112,6 +122,16 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
         String countQuery = "SELECT * FROM " + Util.TABLE_NAME;
         Cursor cursor = db.rawQuery(countQuery, null);
-        return cursor.getCount();
+        int count = -1;
+        if (cursor != null) {
+            try {
+                count = cursor.getCount();
+            } finally {
+                cursor.close();
+            }
+
+        }
+        return count;
+
     }
 }
